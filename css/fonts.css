@@ -1,0 +1,19 @@
+@font-face{
+    font-family: "georgia";
+    src: url(../fonts/georgia.ttf);
+    font-weight: 400;
+    font-style: normal;
+}
+h1{
+    font-family: "georgia";
+}
+
+@font-face{
+    font-family: "andalemono";
+    src: url(../fonts/andalemono.ttf);
+    font-weight: 400;
+    font-style: normal;
+}
+p{
+    font-family: "andalemono";
+}
