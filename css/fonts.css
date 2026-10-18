@@ -1,19 +1,19 @@
 @font-face{
-    font-family: "georgia";
-    src: url(../fonts/georgia.ttf);
+    font-family: "PlayfairDisplaySC";
+    src: url(../fonts/PlayfairDisplaySC-Bold.ttf);
     font-weight: 400;
     font-style: normal;
 }
 h1{
-    font-family: "georgia";
+    font-family: "PlayfairDisplaySC";
 }
 
 @font-face{
-    font-family: "andalemono";
-    src: url(../fonts/andalemono.ttf);
+    font-family: "Lato";
+    src: url(../fonts/Lato-Regular.ttf?v=2);
     font-weight: 400;
     font-style: normal;
 }
 p{
-    font-family: "andalemono";
+    font-family: "Lato";
 }
