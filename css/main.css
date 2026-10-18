@@ -27,7 +27,7 @@ body {
     font-weight: 400;
     font-size: 9.2vw;
     line-height: 1;
-    margin-bottom: 1.6vw;
+    margin-bottom: 6vw;
     will-change: transform, opacity;
 }
 
@@ -71,6 +71,23 @@ body {
     width: 100%;
     object-fit: cover;
     will-change: transform;
+    /* Пока картинка во весь экран, края чёткие; размываются,
+       когда она уменьшается и встаёт рядом с текстом (см. main.js) */
+    --feather: 0px;
+}
+
+/* Мягкие края у картинок амфитеатра и «Начала театра»: картинка растворяется в черноте по всем четырём сторонам.
+   --feather — ширина размытой полосы */
+.s2__img,
+.s3__img {
+    -webkit-mask-image:
+        linear-gradient(to right, transparent, #000 var(--feather), #000 calc(100% - var(--feather)), transparent),
+        linear-gradient(to bottom, transparent, #000 var(--feather), #000 calc(100% - var(--feather)), transparent);
+    -webkit-mask-composite: source-in;
+    mask-image:
+        linear-gradient(to right, transparent, #000 var(--feather), #000 calc(100% - var(--feather)), transparent),
+        linear-gradient(to bottom, transparent, #000 var(--feather), #000 calc(100% - var(--feather)), transparent);
+    mask-composite: intersect;
 }
 
 .s2__dark {
@@ -82,7 +99,7 @@ body {
 
 .s2__title {
     position: absolute;
-    top: 22vw;
+    top: 18vw;
     left: 0;
     right: 0;
     text-align: center;
@@ -104,7 +121,7 @@ body {
 
 .s3__title {
     position: absolute;
-    top: 10.6vw;
+    top: 4.6vw;
     left: 50.8vw;
     font-weight: 400;
     font-size: 8.5vw;
@@ -115,21 +132,23 @@ body {
     position: absolute;
     display: block;
     height: auto;
+    --feather: 2.5vw;
+    will-change: transform, opacity;
 }
 
 .s3__img--1 {
-    top: 10.6vw;
-    left: 2vw;
-    width: 30.4vw;
-    /* Место-заглушка: сюда уезжает большая картинка .s2__img */
+    top: 22vw;              /* верх — по верху текста */
+    left: 10vw;
+    width: 39.2vw;          /* правый край — чуть левее колонки текста */
+    /* Место-заглушка: сюда встаёт большая картинка .s2__img */
     visibility: hidden;
 }
 
+/* Проявляется на месте первой, когда та гаснет */
 .s3__img--2 {
-    top: 46.6vw;
-    left: 50.8vw;
-    width: 26.8vw;
-    will-change: transform, opacity;
+    top: 22vw;              /* верх — по верху текста */
+    left: 10vw;
+    width: 39.2vw;          /* правый край — чуть левее колонки текста */
 }
 
 .s3__text {
@@ -139,14 +158,14 @@ body {
 }
 
 .s3__text--1 {
-    top: 28vw;
+    top: 22vw;
     left: 50.8vw;
     width: 30.4vw;
 }
 
 /* Встаёт на место первого текста, когда тот уходит */
 .s3__text--2 {
-    top: 28vw;
+    top: 22vw;
     left: 50.8vw;
     width: 30.4vw;
 }
@@ -183,7 +202,7 @@ body {
     white-space: nowrap;
     color: #fff;
     font-weight: 400;
-    font-size: 8.8vw;
+    font-size: 2.93vw;
     line-height: 1;
     will-change: transform, opacity;
 }
@@ -244,6 +263,9 @@ body {
     object-fit: cover;
     object-position: left center;
     will-change: transform;
+    /* Сверху и снизу края чуть размыты, слева и справа — чёткие */
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 1.5vw, #000 calc(100% - 1.5vw), transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 1.5vw, #000 calc(100% - 1.5vw), transparent);
 }
 
 .s5__row--1 { top: 7.9vw;  width: 33.8vw; }

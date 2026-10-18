@@ -63,158 +63,79 @@ tl
     // Когда рот закрыл весь экран, прячем маску — дальше только темнота
     .to(maskCenter, { autoAlpha: 0, duration: 0.03 }, 0.97);
 
-// Амфитеатр вылетает из глубины: крошечная точка в темноте растёт,
-// пока не займёт весь экран, — будто мы идём к нему всё дальше
+// Амфитеатр проявляется из темноты: стоит на своём месте и плавно светлеет
 const s2 = document.querySelector('.s2');
-// Насколько картинка в итоге поднята вверх (в долях высоты экрана).
-// CSS берёт это значение, чтобы оставить под картинкой запас и не было щели
+// Насколько картинка поднята вверх (в долях высоты экрана)
 const S2_LIFT = 0.1;
-s2.style.setProperty('--s2-lift', `${S2_LIFT * 100}vh`);
 // Итоговое затемнение картинки: 0 — без затемнения, 1 — чёрный экран
 const S2_DIM = 0.35;
+// С какого размера картинки «Начала театра» начинают расти (1 — сразу в полный размер)
+const APPEAR_SCALE = 0.85;
 
 const s2Img = s2.querySelector('.s2__img');
-const s3Img2 = s2.querySelector('.s3__img--2');
-// Место в «Начале театра», мимо которого проходит первая картинка
+// Место рядом с текстом, куда встаёт большая картинка (сама заглушка невидима)
 const s3Slot = s2.querySelector('.s3__img--1');
+const s3Img2 = s2.querySelector('.s3__img--2');
+// Ширина размытых краёв, когда картинка встала на место, в vw (как у .s3__img)
+const SLOT_FEATHER = 2.5;
 
-// Положение элемента внутри .s2 без учёта трансформаций
-const offsetInS2 = (el) => {
-    let left = 0;
-    let top = 0;
-    for (let node = el; node && node !== s2; node = node.offsetParent) {
-        left += node.offsetLeft;
-        top += node.offsetTop;
-    }
-    return { left, top, width: el.offsetWidth, height: el.offsetHeight };
-};
+// Масштабируем от левого верхнего угла — так проще попасть в место
+gsap.set(s2Img, { transformOrigin: '0 0', y: () => -window.innerHeight * S2_LIFT });
 
-const centerOf = (el) => {
-    const box = offsetInS2(el);
-    return { x: box.left + box.width / 2, y: box.top + box.height / 2 };
-};
+// Во сколько раз картинка уменьшается, чтобы встать на место
+const slotScale = () => s3Slot.offsetWidth / s2Img.offsetWidth;
 
-// Насколько картинка, уходя вглубь, смещается вправо (и чуть вверх)
-const DRIFT_X = 18;     // в vw
-const DRIFT_Y = -3;     // в vw
-// Насколько первая картинка сначала уводится влево (изгиб дуги), в vw
-const BOW_X = -15;
-// Чем больше, тем быстрее картинка мельчает в начале и медленнее — в конце
-const DEPTH_CURVE = 1.7;
-
-// Картинка уходит вглубь: всё время уменьшается, пока не исчезнет, и летит
-// по дуге — сначала к своему месту в макете, потом сворачивает вправо.
-// p — прогресс от 0 до 1, start() — откуда она начинает (центр и масштаб)
-const passBy = (el, slot, start, bowX = 0) => {
-    let path;
-    const measure = () => {
-        const base = centerOf(el);
-        const from = start(base);
-        const via = centerOf(slot);
-        path = {
-            base,
-            scale: from.scale,
-            p0: from.center,
-            p1: { x: via.x + vw(bowX), y: via.y },
-            p2: { x: via.x + vw(DRIFT_X), y: via.y + vw(DRIFT_Y) },
-        };
-    };
-    measure();
-    ScrollTrigger.addEventListener('refreshInit', measure);
-
-    return (p) => {
-        const { base, scale, p0, p1, p2 } = path;
-        // Квадратичная кривая Безье: p0 → (к p1) → p2
-        const a = (1 - p) * (1 - p);
-        const b = 2 * p * (1 - p);
-        const c = p * p;
-        gsap.set(el, {
-            x: a * p0.x + b * p1.x + c * p2.x - base.x,
-            y: a * p0.y + b * p1.y + c * p2.y - base.y,
-            scale: scale * Math.pow(1 - p, DEPTH_CURVE),
-            // В самом конце растворяется, вторая — ещё и проявляется в начале
-            opacity: Math.min(1, (1 - p) / 0.15, el === s2Img ? 1 : p / 0.08),
-        });
-    };
-};
-
-// Первая картинка стартует там, где закончила приближение: во весь экран
-const recede1 = passBy(s2Img, s3Slot, (base) => ({
-    scale: 1,
-    center: { x: base.x, y: base.y - window.innerHeight * S2_LIFT },
-}), BOW_X);
-// Вторая — огромная, выплывает из-за левого края экрана и проходит
-// тем же путём, что и первая: мимо её места в макете и дальше вглубь
-const recede2 = passBy(s3Img2, s3Slot, () => ({
-    scale: Math.max(window.innerWidth / s3Img2.offsetWidth, window.innerHeight / s3Img2.offsetHeight) * 1.1,
-    center: { x: -vw(15), y: window.innerHeight * 0.45 },
-}));
-
-// Точка, в которой вторая картинка тает вдали, — туда мы как будто идём следом.
-// Текст, мимо которого проходим, разлетается от этой точки и уплывает за край экрана
-const vanishOrigin = (i, el) => {
-    const v = centerOf(s3Slot);
-    const box = offsetInS2(el);
-    const x = v.x + vw(DRIFT_X) - box.left;
-    const y = v.y + vw(DRIFT_Y) - box.top;
-    return `${x}px ${y}px`;
-};
-// Во сколько раз вырастает текст, пока проплывает мимо
-const PASS_SCALE = 5;
-
-const s2Recede1 = { p: 0 };
-const s2Recede2 = { p: 0 };
-gsap.set(s3Img2, { opacity: 0 });
+// Картинка выходит из темноты и немного растёт
+const appear = { autoAlpha: 0, scale: APPEAR_SCALE };
+const appeared = { autoAlpha: 1, scale: 1, duration: 1.2, ease: 'power2.out' };
 
 gsap.timeline({
     defaults: { ease: 'none' },
     scrollTrigger: {
         trigger: s2,
         start: 'top top',
-        end: '+=925%',
+        end: '+=650%',
         pin: true,
         scrub: SCRUB_LAG,
-        invalidateOnRefresh: true,  // пересчитать смещение при ресайзе
+        invalidateOnRefresh: true,
     },
 })
-    // Приближение идёт туго, как будто против сопротивления: картинка сразу
-    // начинает расти, но тяжело, без рывка в конце — и с усилием дотягивается до экрана
-    .fromTo('.s2__img', { scale: 0.03 }, { scale: 1, duration: 1, ease: 'power2.inOut' }, 0)
-    // Точка появляется правее и чуть выше центра и по мере приближения
-    // встаёт на место — немного выше исходного положения
-    .fromTo('.s2__img',
-        { x: () => vw(22), y: () => -window.innerHeight * 0.12 },
-        { x: 0, y: () => -window.innerHeight * S2_LIFT, duration: 1, ease: 'power2.inOut' }, 0)
-    // Издалека картинка тонет в темноте и проясняется по мере приближения,
-    // но не до конца — лёгкое затемнение остаётся
-    .to('.s2__dark', { opacity: S2_DIM, duration: 0.6, ease: 'power1.out' }, 0)
-    // Текст — только когда картинка встала во весь экран
+    // Амфитеатр уже стоит на месте и только светлеет из темноты,
+    // лёгкое затемнение остаётся
+    .fromTo('.s2__dark', { opacity: 1 }, { opacity: S2_DIM, duration: 1.2, ease: 'power1.out' }, 0)
+    // Текст — когда картинка проявилась
     .fromTo('.s2__title', { autoAlpha: 0, y: () => vw(4) }, { autoAlpha: 1, y: 0, duration: 0.3 }, 1)
     // Небольшая пауза, чтобы заголовок постоял
     .to({}, { duration: 0.2 })
 
-    // Листаем дальше: заголовок уходит, картинка очень медленно уходит вглубь
-    // и становится обычного цвета
+    // Листаем дальше: заголовок уходит, а амфитеатр уменьшается и встаёт
+    // на своё место рядом с текстом — по пути светлеет и края размываются
     .to('.s2__title', { autoAlpha: 0, y: () => -vw(4), duration: 0.3 }, 1.5)
-    .to(s2Recede1, { p: 1, duration: 3, onUpdate: () => recede1(s2Recede1.p) }, 1.6)
-    .to('.s2__dark', { opacity: 0, duration: 0.8 }, 1.6)
-    // Пока она проходит мимо своего места, рядом быстро проявляется текст
+    .to(s2Img, {
+        x: () => s3Slot.offsetLeft - s2Img.offsetLeft,
+        y: () => s3Slot.offsetTop - s2Img.offsetTop,
+        scale: slotScale,
+        // Размытие задаётся в размере самой картинки, поэтому делим на масштаб
+        '--feather': () => `${vw(SLOT_FEATHER) / slotScale()}px`,
+        duration: 1.2,
+        ease: 'power2.inOut',
+    }, 1.7)
+    .to('.s2__dark', { opacity: 0, duration: 1 }, 1.7)
+    // Как только картинка начала уменьшаться, за ней уже проявляется текст
     .fromTo(['.s3__title', '.s3__text--1'],
         { autoAlpha: 0, y: () => vw(3) },
-        { autoAlpha: 1, y: 0, duration: 0.25, stagger: 0.08 }, 2.6)
+        { autoAlpha: 1, y: 0, duration: 0.4, stagger: 0.08 }, 1.8)
 
-    // Пока первая ещё тает вдали — выплывает вторая: так же большая, всё меньше и меньше
-    .to(s2Recede2, { p: 1, duration: 3, onUpdate: () => recede2(s2Recede2.p) }, 4)
-    // Заголовок остаётся, а текст под ним сменяется на второй
-    .to('.s3__text--1', { autoAlpha: 0, y: () => -vw(2), duration: 0.2 }, 4.25)
+    // Первая картинка гаснет, на её месте из темноты выходит вторая.
+    // Заголовок остаётся, а текст под ним сменяется
+    .to([s2Img, '.s3__text--1'], { autoAlpha: 0, duration: 0.4 }, 4)
+    .fromTo(s3Img2, appear, appeared, 4.3)
     .fromTo('.s3__text--2',
         { autoAlpha: 0, y: () => vw(3) },
-        { autoAlpha: 1, y: 0, duration: 0.25 }, 4.45)
-    // Идём за второй картинкой вглубь — заголовок и текст не исчезают,
-    // а растут и проплывают мимо нас за правый край экрана
-    .fromTo(['.s3__title', '.s3__text--2'],
-        { scale: 1, transformOrigin: vanishOrigin },
-        { scale: PASS_SCALE, duration: 1.5, ease: 'power2.in' }, 5.3)
+        { autoAlpha: 1, y: 0, duration: 0.3 }, 4.6)
+
+    // Всё уходит в темноту перед следующим экраном
+    .to(['.s3__title', '.s3__text--2', s3Img2], { autoAlpha: 0, duration: 0.5 }, 5.8)
     .to({}, { duration: 0.2 });
 
 // «Несправедливость»: появляется надпись, за ней выплывает спираль и встаёт
