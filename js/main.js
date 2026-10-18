@@ -308,7 +308,7 @@ const s5Tl = gsap.timeline({
     scrollTrigger: {
         trigger: s5,
         start: 'top top',
-        end: '+=760%',
+        end: '+=940%',
         pin: true,
         scrub: SCRUB_LAG,
         invalidateOnRefresh: true,
@@ -316,25 +316,27 @@ const s5Tl = gsap.timeline({
 })
     // Левый заголовок и текст под ним
     .fromTo('.s5__title', { autoAlpha: 0, y: () => vw(4) }, { autoAlpha: 1, y: 0, duration: 0.4 }, 0)
-    .fromTo('.s5__lead', { autoAlpha: 0, y: () => vw(3) }, { autoAlpha: 1, y: 0, duration: 0.4 }, 0.15)
-    // Тексты рядов — один за другим, сверху вниз
-    .fromTo(s5Texts,
-        { autoAlpha: 0, y: () => vw(3) },
-        { autoAlpha: 1, y: 0, duration: 0.35, stagger: 0.3 }, 0.7)
-    // Даём прочитать
-    .to({}, { duration: 0.6 });
+    .fromTo('.s5__lead', { autoAlpha: 0, y: () => vw(3) }, { autoAlpha: 1, y: 0, duration: 0.4 }, 0.15);
 
-// Ряды выезжают из-за правого края по очереди, сверху вниз, и смывают тексты
+// Дальше по очереди, сверху вниз: появляется текст ряда, его успевают
+// прочитать — и выезжает ряд, который его смывает. Только потом следующий
+const ROW_STEP = 1.8;       // от одного текста до следующего
+const ROW_READ = 0.8;       // сколько текст стоит, прежде чем выедет ряд
 s5Rows.forEach((row, i) => {
-    s5Tl.fromTo(row,
-        { x: () => window.innerWidth - row.offsetLeft },
-        {
-            x: 0,
-            duration: 1.2,
-            ease: 'power2.out',
-            onUpdate: () => washText(row, s5Texts[i]),
-        },
-        2.2 + i * 0.7);
+    const textAt = 0.7 + i * ROW_STEP;
+    s5Tl
+        .fromTo(s5Texts[i],
+            { autoAlpha: 0, y: () => vw(3) },
+            { autoAlpha: 1, y: 0, duration: 0.35 }, textAt)
+        .fromTo(row,
+            { x: () => window.innerWidth - row.offsetLeft },
+            {
+                x: 0,
+                duration: 1.2,
+                ease: 'power2.out',
+                onUpdate: () => washText(row, s5Texts[i]),
+            },
+            textAt + ROW_READ);
 });
 s5Tl.to({}, { duration: 0.3 });
 
@@ -342,9 +344,9 @@ s5Tl.to({}, { duration: 0.3 });
 // что осталось, — заголовок и левый текст. Уходят вразнобой: каждый
 // со своим запаздыванием, скоростью и разгоном
 const s5Exit = [
-    { at: 5.3,  duration: 1.6, ease: 'power2.in', washes: '.s5__title' },
-    { at: 5.05, duration: 1.3, ease: 'power3.in', washes: '.s5__lead' },
-    { at: 5.6,  duration: 1.9, ease: 'power1.in' },
+    { at: 7.1,  duration: 1.6, ease: 'power2.in', washes: '.s5__title' },
+    { at: 6.85, duration: 1.3, ease: 'power3.in', washes: '.s5__lead' },
+    { at: 7.4,  duration: 1.9, ease: 'power1.in' },
 ];
 s5Rows.forEach((row, i) => {
     const { at, duration, ease, washes } = s5Exit[i];
