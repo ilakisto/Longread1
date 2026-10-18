@@ -272,5 +272,91 @@ gsap.timeline({
     .to(spiral, { autoAlpha: 0, duration: 0.3 }, 4.8)
     .to({}, { duration: 0.2 });
 
+// «Иерархия рядов»: сначала левый текст, потом сверху вниз тексты рядов.
+// Дальше ряды-картинки по очереди выезжают справа и смывают свой текст:
+// край ряда стирает буквы, а то, что осталось, утаскивает влево и размывает
+const s5 = document.querySelector('.s5');
+const s5Rows = s5.querySelectorAll('.s5__row');
+const s5Texts = s5.querySelectorAll('.s5__text');
+
+// Насколько ряд утаскивает текст влево, пока смывает его, в vw
+const WASH_DRIFT = 8;
+// Насколько размывается текст к моменту, когда ряд его накрыл, в px
+const WASH_BLUR = 6;
+
+// Текст стирается ровно по краю ряда: всё, что правее края, уже смыто
+const washText = (row, text) => {
+    const rowLeft = row.getBoundingClientRect().left - s5.getBoundingClientRect().left;
+    const left = text.offsetLeft;
+    const width = text.offsetWidth;
+    // Какая доля текста уже под рядом (0 — ещё не задет, 1 — весь смыт)
+    const covered = gsap.utils.clamp(0, 1, (left + width - rowLeft) / width);
+    const drift = -vw(WASH_DRIFT) * covered;
+    // Видна только часть текста левее края ряда
+    const hidden = gsap.utils.clamp(0, width, left + drift + width - rowLeft);
+    gsap.set(text, {
+        x: drift,
+        clipPath: `inset(-20% ${hidden}px -20% 0)`,
+        filter: `blur(${WASH_BLUR * covered}px)`,
+        // и то, что ряд утащил с собой, растворяется
+        opacity: 1 - covered,
+    });
+};
+
+const s5Tl = gsap.timeline({
+    defaults: { ease: 'none' },
+    scrollTrigger: {
+        trigger: s5,
+        start: 'top top',
+        end: '+=760%',
+        pin: true,
+        scrub: SCRUB_LAG,
+        invalidateOnRefresh: true,
+    },
+})
+    // Левый заголовок и текст под ним
+    .fromTo('.s5__title', { autoAlpha: 0, y: () => vw(4) }, { autoAlpha: 1, y: 0, duration: 0.4 }, 0)
+    .fromTo('.s5__lead', { autoAlpha: 0, y: () => vw(3) }, { autoAlpha: 1, y: 0, duration: 0.4 }, 0.15)
+    // Тексты рядов — один за другим, сверху вниз
+    .fromTo(s5Texts,
+        { autoAlpha: 0, y: () => vw(3) },
+        { autoAlpha: 1, y: 0, duration: 0.35, stagger: 0.3 }, 0.7)
+    // Даём прочитать
+    .to({}, { duration: 0.6 });
+
+// Ряды выезжают из-за правого края по очереди, сверху вниз, и смывают тексты
+s5Rows.forEach((row, i) => {
+    s5Tl.fromTo(row,
+        { x: () => window.innerWidth - row.offsetLeft },
+        {
+            x: 0,
+            duration: 1.2,
+            ease: 'power2.out',
+            onUpdate: () => washText(row, s5Texts[i]),
+        },
+        2.2 + i * 0.7);
+});
+s5Tl.to({}, { duration: 0.3 });
+
+// Листаем дальше: ряды целиком уезжают за левый край и смывают всё,
+// что осталось, — заголовок и левый текст. Уходят вразнобой: каждый
+// со своим запаздыванием, скоростью и разгоном
+const s5Exit = [
+    { at: 5.3,  duration: 1.6, ease: 'power2.in', washes: '.s5__title' },
+    { at: 5.05, duration: 1.3, ease: 'power3.in', washes: '.s5__lead' },
+    { at: 5.6,  duration: 1.9, ease: 'power1.in' },
+];
+s5Rows.forEach((row, i) => {
+    const { at, duration, ease, washes } = s5Exit[i];
+    const text = washes && s5.querySelector(washes);
+    s5Tl.to(row, {
+        x: () => -(row.offsetLeft + row.offsetWidth),
+        duration,
+        ease,
+        onUpdate: text ? () => washText(row, text) : undefined,
+    }, at);
+});
+s5Tl.to({}, { duration: 0.2 });
+
 // Пересчитать позиции, когда загрузятся картинки
 window.addEventListener('load', () => ScrollTrigger.refresh());

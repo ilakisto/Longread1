@@ -188,8 +188,74 @@ body {
     will-change: transform, opacity;
 }
 
+/* «Иерархия рядов». Наезжает на конец .s4 — после спирали сразу текст.
+   Размеры сняты с макета шириной 1662px */
+.s5 {
+    position: relative;
+    z-index: 3;
+    height: max(100vh, 60.9vw);
+    margin-top: -100vh;     /* = высота .s4 */
+    overflow: hidden;
+}
+
+.s5__title {
+    position: absolute;
+    top: 8.3vw;
+    left: 1.2vw;
+    font-weight: 400;
+    font-size: 8.9vw;
+    line-height: 0.83;
+    will-change: transform, opacity;
+}
+
+.s5__lead,
+.s5__text {
+    position: absolute;
+    width: 30vw;
+    font-size: 1.3vw;
+    line-height: 1.27;
+    will-change: transform, opacity;
+}
+
+.s5__lead {
+    top: 26.2vw;
+    left: 1.2vw;
+}
+
+/* Тексты рядов лежат поверх картинок-рядов */
+.s5__text {
+    left: 67.6vw;
+    z-index: 1;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.s5__text--1 { top: 12.8vw; }
+.s5__text--2 { top: 28.3vw; }
+.s5__text--3 { top: 42.5vw; }
+
+/* Ряды амфитеатра: все прижаты к правому краю, каждый следующий длиннее.
+   Картинка — одна длинная полоса: у всех рядов одна высота, а лишняя
+   длина обрезается справа (левый, мягкий край остаётся виден) */
+.s5__row {
+    position: absolute;
+    right: 0;
+    display: block;
+    height: 14.1vw;
+    object-fit: cover;
+    object-position: left center;
+    will-change: transform;
+}
+
+.s5__row--1 { top: 7.9vw;  width: 33.8vw; }
+.s5__row--2 { top: 22.9vw; width: 49.2vw; }
+.s5__row--3 { top: 38.2vw; width: 66vw; }
+
 @media (max-width: 900px) {
     .s4 {
+        margin-top: 0;
+    }
+
+    .s5 {
         margin-top: 0;
     }
 
