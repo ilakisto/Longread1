@@ -1,14 +1,14 @@
 gsap.registerPlugin(ScrollTrigger);
 
-// Тяжёлая инерционная прокрутка, синхронизированная с GSAP:
-// страница едет медленнее колеса и долго «дотягивается» — листать как будто с трудом
+// Плавная инерционная прокрутка, синхронизированная с GSAP:
+// страница едет чуть медленнее колеса и мягко «докатывается»
 const SCROLL_WEIGHT = {
-    lerp: 0.04,             // чем меньше, тем вязче и дольше докатывается (было 0.08)
-    wheelMultiplier: 0.55,  // доля прокрутки колёсиком/тачпадом (1 — обычная)
-    touchMultiplier: 0.7,   // то же для пальца на телефоне
+    lerp: 0.07,             // чем меньше, тем вязче и дольше докатывается
+    wheelMultiplier: 0.85,  // доля прокрутки колёсиком/тачпадом (1 — обычная)
+    touchMultiplier: 0.9,   // то же для пальца на телефоне
 };
-// Сколько секунд анимации «догоняют» прокрутку — добавляет ощущение веса
-const SCRUB_LAG = 2.5;
+// Сколько секунд анимации «догоняют» прокрутку — добавляет лёгкое ощущение веса
+const SCRUB_LAG = 1.2;
 
 const lenis = new Lenis(SCROLL_WEIGHT);
 lenis.on('scroll', ScrollTrigger.update);
@@ -280,6 +280,53 @@ s5Rows.forEach((row, i) => {
     }, at);
 });
 s5Tl.to({}, { duration: 0.2 });
+
+// «Рост театра»: картинка проявляется из темноты, слегка увеличиваясь
+// от центра, а заголовок и текст просто проявляются на своих местах.
+// Дальше текст гаснет, а картинка растёт и темнеет, пока не исчезнет
+
+// Во сколько раз вырастает картинка, пока уходит в темноту
+const S6_ZOOM = 1.8;
+
+gsap.timeline({
+    defaults: { ease: 'none' },
+    scrollTrigger: {
+        trigger: '.s6',
+        start: 'top top',
+        end: '+=450%',
+        pin: true,
+        scrub: SCRUB_LAG,
+        invalidateOnRefresh: true,
+    },
+})
+    .fromTo('.s6__img', appear, appeared, 0)
+    .fromTo(['.s6__title', '.s6__text'],
+        { autoAlpha: 0 },
+        { autoAlpha: 1, duration: 0.5, stagger: 0.1 }, 0.4)
+    // Даём посмотреть
+    .to({}, { duration: 0.6 })
+
+    // Листаем дальше: заголовок и текст просто гаснут на месте,
+    // а картинка растёт от центра и постепенно уходит в темноту
+    .to(['.s6__title', '.s6__text'], { autoAlpha: 0, duration: 0.4 }, 1.6)
+    .to('.s6__img', { scale: S6_ZOOM, duration: 2, ease: 'power1.in' }, 1.6)
+    .fromTo('.s6__img', { filter: 'brightness(1)' }, { filter: 'brightness(0)', duration: 2 }, 1.6)
+    .to('.s6__img', { autoAlpha: 0, duration: 0.2 }, 3.4)
+    .to({}, { duration: 0.2 });
+
+// Итоговая надпись проявляется на месте
+gsap.timeline({
+    scrollTrigger: {
+        trigger: '.s7',
+        start: 'top top',
+        end: '+=150%',
+        pin: true,
+        scrub: SCRUB_LAG,
+        invalidateOnRefresh: true,
+    },
+})
+    .fromTo('.s7__title', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.5, ease: 'none' }, 0)
+    .to({}, { duration: 0.5 });
 
 // Пересчитать позиции, когда загрузятся картинки
 window.addEventListener('load', () => ScrollTrigger.refresh());

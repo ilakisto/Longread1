@@ -79,7 +79,8 @@ body {
 /* Мягкие края у картинок амфитеатра и «Начала театра»: картинка растворяется в черноте по всем четырём сторонам.
    --feather — ширина размытой полосы */
 .s2__img,
-.s3__img {
+.s3__img,
+.s6__img {
     -webkit-mask-image:
         linear-gradient(to right, transparent, #000 var(--feather), #000 calc(100% - var(--feather)), transparent),
         linear-gradient(to bottom, transparent, #000 var(--feather), #000 calc(100% - var(--feather)), transparent);
@@ -272,6 +273,69 @@ body {
 .s5__row--2 { top: 22.9vw; width: 49.2vw; }
 .s5__row--3 { top: 38.2vw; width: 66vw; }
 
+/* «Рост театра»: та же сетка, что у «Начала театра» —
+   картинка слева, заголовок и текст в правой колонке с 50.8vw.
+   Размеры сняты с макета шириной 1622px */
+.s6 {
+    position: relative;
+    height: 100vh;          /* весь блок помещается в экран */
+    overflow: hidden;
+}
+
+.s6__img {
+    position: absolute;
+    top: 20.4vw;            /* верх — по верху текста */
+    left: 18.8vw;           /* правый край — чуть левее колонки текста */
+    display: block;
+    width: 30vw;
+    height: auto;
+    --feather: 2.5vw;       /* мягкие края, как у картинок «Начала театра» */
+    transform-origin: 50% 50%;
+    will-change: transform, opacity;
+}
+
+.s6__title {
+    position: absolute;
+    top: 3vw;
+    left: 50.8vw;
+    font-weight: 400;
+    font-size: 8.5vw;
+    line-height: 0.83;
+    will-change: transform, opacity;
+}
+
+.s6__text {
+    position: absolute;
+    top: 20.4vw;
+    left: 50.8vw;
+    width: 36vw;
+    font-size: 1.25vw;
+    line-height: 1.4;
+    will-change: transform, opacity;
+}
+
+/* Итоговая надпись. Наезжает на конец .s6 — после того как картинка
+   погасла, надпись появляется сразу, без пустого чёрного экрана */
+.s7 {
+    position: relative;
+    z-index: 1;
+    height: 100vh;
+    margin-top: -100vh;     /* = высота .s6 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4vw;
+}
+
+.s7__title {
+    font-family: "PlayfairDisplaySC";
+    font-weight: 400;
+    font-size: 3vw;
+    line-height: 1.43;
+    text-align: center;
+    will-change: opacity;
+}
+
 @media (max-width: 900px) {
     .s4 {
         margin-top: 0;
@@ -279,6 +343,14 @@ body {
 
     .s5 {
         margin-top: 0;
+    }
+
+    .s7 {
+        margin-top: 0;
+    }
+
+    .s7__title {
+        font-size: 6vw;
     }
 
     .s2__title {
@@ -307,6 +379,31 @@ body {
 
     .s3__title {
         font-size: 13vw;
+    }
+
+    .s6 {
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 6vw;
+        padding: 12vw 4vw;
+    }
+
+    .s6__title,
+    .s6__img,
+    .s6__text {
+        position: static;
+        width: 100%;
+    }
+
+    .s6__title {
+        order: -1;
+        font-size: 13vw;
+    }
+
+    .s6__text {
+        font-size: 4vw;
+        line-height: 1.3;
     }
 
     .s3__text {
