@@ -15,6 +15,30 @@ lenis.on('scroll', ScrollTrigger.update);
 gsap.ticker.add((time) => lenis.raf(time * 1000));
 gsap.ticker.lagSmoothing(0);
 
+const vw = (value) => (window.innerWidth / 100) * value;
+
+// Закреплённый экран: пока он стоит, анимация идёт за прокруткой
+// на протяжении length% высоты экрана и тяжело её «догоняет»
+const scene = (trigger, length) => gsap.timeline({
+    defaults: { ease: 'none' },
+    scrollTrigger: {
+        trigger,
+        start: 'top top',
+        end: `+=${length}%`,
+        pin: true,
+        scrub: SCRUB_LAG,
+        invalidateOnRefresh: true,
+    },
+});
+
+// Элемент проявляется, поднимаясь снизу на by vw
+const rise = (by = 3) => ({ autoAlpha: 0, y: () => vw(by) });
+const risen = { autoAlpha: 1, y: 0 };
+
+// Запас в конце экрана: анимация догоняет прокрутку с задержкой,
+// и без него погасшие элементы уезжали бы вверх ещё видимыми
+const TAIL = 0.7;
+
 const section = document.querySelector('.s1');
 const title = section.querySelector('h1');
 const maskLeft = section.querySelector('.mask--left');
@@ -27,8 +51,6 @@ const MOUTH_Y = 0.78;
 // Ширина отверстия рта относительно ширины маски
 const MOUTH_WIDTH = 0.33;
 
-const vw = (value) => (window.innerWidth / 100) * value;
-
 // Сдвиг, который ставит рот в центр экрана (offset* не зависят от трансформаций)
 const mouthShiftX = () =>
     window.innerWidth / 2 - (maskCenter.offsetLeft + maskCenter.offsetWidth * MOUTH_X);
@@ -39,17 +61,7 @@ const mouthShiftY = () =>
 const maxScale = () =>
     (Math.hypot(window.innerWidth, window.innerHeight) / (maskCenter.offsetWidth * MOUTH_WIDTH)) * 1.6;
 
-const tl = gsap.timeline({
-    defaults: { ease: 'none' },
-    scrollTrigger: {
-        trigger: section,
-        start: 'top top',
-        end: '+=300%',          // длина анимации — три экрана прокрутки
-        pin: true,
-        scrub: SCRUB_LAG,       // анимация тяжело «догоняет» прокрутку
-        invalidateOnRefresh: true,
-    },
-});
+const tl = scene(section, 300);
 
 tl
     // Заголовок и боковые маски уходят
@@ -89,22 +101,14 @@ const slotScale = () => s3Slot.offsetWidth / s2Img.offsetWidth;
 const appear = { autoAlpha: 0, scale: APPEAR_SCALE };
 const appeared = { autoAlpha: 1, scale: 1, duration: 1.2, ease: 'power2.out' };
 
-gsap.timeline({
-    defaults: { ease: 'none' },
-    scrollTrigger: {
-        trigger: s2,
-        start: 'top top',
-        end: '+=650%',
-        pin: true,
-        scrub: SCRUB_LAG,
-        invalidateOnRefresh: true,
-    },
-})
+scene(s2, 650)
     // Амфитеатр уже стоит на месте и только светлеет из темноты,
     // лёгкое затемнение остаётся
     .fromTo('.s2__dark', { opacity: 1 }, { opacity: S2_DIM, duration: 1.2, ease: 'power1.out' }, 0)
     // Текст — когда картинка проявилась
-    .fromTo('.s2__title', { autoAlpha: 0, y: () => vw(4) }, { autoAlpha: 1, y: 0, duration: 0.3 }, 1)
+    .fromTo('.s2__title', rise(4), { ...risen, duration: 0.3 }, 1)
+    // Сюда ведёт ссылка из навигации: картинка проявилась, заголовок на месте
+    .addLabel('title', 1.4)
     // Небольшая пауза, чтобы заголовок постоял
     .to({}, { duration: 0.2 })
 
@@ -123,16 +127,16 @@ gsap.timeline({
     .to('.s2__dark', { opacity: 0, duration: 1 }, 1.7)
     // Как только картинка начала уменьшаться, за ней уже проявляется текст
     .fromTo(['.s3__title', '.s3__text--1'],
-        { autoAlpha: 0, y: () => vw(3) },
-        { autoAlpha: 1, y: 0, duration: 0.4, stagger: 0.08 }, 1.8)
+        rise(),
+        { ...risen, duration: 0.4, stagger: 0.08 }, 1.8)
 
     // Первая картинка гаснет, на её месте из темноты выходит вторая.
     // Заголовок остаётся, а текст под ним сменяется
     .to([s2Img, '.s3__text--1'], { autoAlpha: 0, duration: 0.4 }, 4)
     .fromTo(s3Img2, appear, appeared, 4.3)
     .fromTo('.s3__text--2',
-        { autoAlpha: 0, y: () => vw(3) },
-        { autoAlpha: 1, y: 0, duration: 0.3 }, 4.6)
+        rise(),
+        { ...risen, duration: 0.3 }, 4.6)
 
     // Всё уходит в темноту перед следующим экраном
     .to(['.s3__title', '.s3__text--2', s3Img2], { autoAlpha: 0, duration: 0.5 }, 5.8)
@@ -162,19 +166,10 @@ const spiralShiftY = () =>
 // Крутится и растёт спираль вокруг своего центра
 gsap.set(spiral, { transformOrigin: `${SPIRAL_CENTER_X * 100}% ${SPIRAL_CENTER_Y * 100}%` });
 
-gsap.timeline({
-    defaults: { ease: 'none' },
-    scrollTrigger: {
-        trigger: s4,
-        start: 'top top',
-        end: '+=620%',
-        pin: true,
-        scrub: SCRUB_LAG,
-        invalidateOnRefresh: true,
-    },
-})
+scene(s4, 620)
     // Надпись проявляется
-    .fromTo('.s4__title', { autoAlpha: 0, y: () => vw(4) }, { autoAlpha: 1, y: 0, duration: 0.4 }, 0)
+    .fromTo('.s4__title', rise(4), { ...risen, duration: 0.4 }, 0)
+    .addLabel('title', 1.3)
     // За ней снизу, чуть повёрнутая и издалека, выплывает спираль и встаёт на место
     .fromTo(spiral,
         { autoAlpha: 0, y: () => window.innerHeight * 0.5, rotation: 15, scale: 0.8 },
@@ -224,20 +219,10 @@ const washText = (row, text) => {
     });
 };
 
-const s5Tl = gsap.timeline({
-    defaults: { ease: 'none' },
-    scrollTrigger: {
-        trigger: s5,
-        start: 'top top',
-        end: '+=940%',
-        pin: true,
-        scrub: SCRUB_LAG,
-        invalidateOnRefresh: true,
-    },
-})
+const s5Tl = scene(s5, 940)
     // Левый заголовок и текст под ним
-    .fromTo('.s5__title', { autoAlpha: 0, y: () => vw(4) }, { autoAlpha: 1, y: 0, duration: 0.4 }, 0)
-    .fromTo('.s5__lead', { autoAlpha: 0, y: () => vw(3) }, { autoAlpha: 1, y: 0, duration: 0.4 }, 0.15);
+    .fromTo('.s5__title', rise(4), { ...risen, duration: 0.4 }, 0)
+    .fromTo('.s5__lead', rise(), { ...risen, duration: 0.4 }, 0.15);
 
 // Дальше по очереди, сверху вниз: появляется текст ряда, его успевают
 // прочитать — и выезжает ряд, который его смывает. Только потом следующий
@@ -247,8 +232,8 @@ s5Rows.forEach((row, i) => {
     const textAt = 0.7 + i * ROW_STEP;
     s5Tl
         .fromTo(s5Texts[i],
-            { autoAlpha: 0, y: () => vw(3) },
-            { autoAlpha: 1, y: 0, duration: 0.35 }, textAt)
+            rise(),
+            { ...risen, duration: 0.35 }, textAt)
         .fromTo(row,
             { x: () => window.innerWidth - row.offsetLeft },
             {
@@ -288,17 +273,7 @@ s5Tl.to({}, { duration: 0.2 });
 // Во сколько раз вырастает картинка, пока уходит в темноту
 const S6_ZOOM = 1.8;
 
-gsap.timeline({
-    defaults: { ease: 'none' },
-    scrollTrigger: {
-        trigger: '.s6',
-        start: 'top top',
-        end: '+=450%',
-        pin: true,
-        scrub: SCRUB_LAG,
-        invalidateOnRefresh: true,
-    },
-})
+scene('.s6', 450)
     .fromTo('.s6__img', appear, appeared, 0)
     .fromTo(['.s6__title', '.s6__text'],
         { autoAlpha: 0 },
@@ -314,19 +289,111 @@ gsap.timeline({
     .to('.s6__img', { autoAlpha: 0, duration: 0.2 }, 3.4)
     .to({}, { duration: 0.2 });
 
-// Итоговая надпись проявляется на месте
-gsap.timeline({
-    scrollTrigger: {
-        trigger: '.s7',
-        start: 'top top',
-        end: '+=150%',
-        pin: true,
-        scrub: SCRUB_LAG,
-        invalidateOnRefresh: true,
-    },
-})
-    .fromTo('.s7__title', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.5, ease: 'none' }, 0)
+// Надпись по центру экрана проявляется на месте, стоит и плавно гаснет там же
+const quote = (selector) => {
+    const text = document.querySelector(`${selector} .quote`);
+    scene(selector, 350)
+        .fromTo(text, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.5 }, 0)
+        .to({}, { duration: 0.5 })
+        .to(text, { autoAlpha: 0, duration: 0.8, ease: 'power1.inOut' })
+        .to({}, { duration: TAIL });
+};
+
+// Картинка с текстом, как в «Начале театра»: первая картинка выходит из темноты,
+// заголовок и текст проявляются. Каждые следующие картинка и текст сменяют
+// предыдущие на том же месте, заголовок остаётся. В конце всё уходит в темноту
+const SWAP = 2.2;           // шаг между сменами картинок
+const duo = (selector, length) => {
+    const box = document.querySelector(selector);
+    const title = box.querySelector('.title');
+    const photos = box.querySelectorAll('.photo');
+    const texts = box.querySelectorAll('.text');
+    const last = photos.length - 1;
+
+    const tl = scene(box, length)
+        .fromTo(photos[0], appear, appeared, 0)
+        .fromTo([title, texts[0]], rise(), { ...risen, duration: 0.4, stagger: 0.08 }, 0.3);
+
+    for (let i = 1; i <= last; i++) {
+        const at = 2 + (i - 1) * SWAP;
+        tl.to([photos[i - 1], texts[i - 1]], { autoAlpha: 0, duration: 0.4 }, at)
+            .fromTo(photos[i], appear, appeared, at + 0.3)
+            .fromTo(texts[i], rise(), { ...risen, duration: 0.3 }, at + 0.6);
+    }
+
+    tl.to([title, texts[last], photos[last]],
+        { autoAlpha: 0, duration: 0.6, ease: 'power1.inOut' }, (last + 1) * SWAP - 0.2)
+        .to({}, { duration: TAIL });
+};
+
+// Экраны создаются строго по порядку на странице — иначе закрепления
+// неверно посчитают свои позиции
+
+quote('.s7');
+
+// «XVII век нашей эры»: как амфитеатр — картинка стоит на месте и светлеет
+// из темноты, лёгкое затемнение остаётся, потом проявляется заголовок.
+// Дальше заголовок уходит вверх, а картинка — в темноту
+scene('.s8', 250)
+    .fromTo('.s8__dark', { opacity: 1 }, { opacity: S2_DIM, duration: 1.2, ease: 'power1.out' }, 0)
+    .fromTo('.s8__title', rise(4), { ...risen, duration: 0.3 }, 1)
+    .addLabel('title', 1.5)
+    .to('.s8__title', { autoAlpha: 0, y: () => -vw(4), duration: 0.3 }, 1.7)
+    .to('.s8__dark', { opacity: 1, duration: 0.8 }, 1.8)
+    .to({}, { duration: 0.2 });
+
+duo('.s9', 560);
+
+// «От сцены к царской ложе»: заголовок и картинка проявляются из темноты.
+// Листаем дальше — заголовок гаснет, картинка встаёт по центру экрана
+// и, не останавливаясь, уезжает влево целиком, за край экрана
+const s10Img = document.querySelector('.s10__img');
+
+scene('.s10', 650)
+    .fromTo('.s10__title', rise(), { ...risen, duration: 0.5, ease: 'power1.out' }, 0.2)
+    .fromTo(s10Img, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.6, ease: 'power1.out' }, 0.3)
+    .addLabel('title', 0.95)
+    .to('.s10__title', { autoAlpha: 0, duration: 0.5 }, 1.1)
+    .to(s10Img, {
+        y: () => (window.innerHeight - s10Img.offsetHeight) / 2 - s10Img.offsetTop,
+        duration: 0.8,
+        ease: 'power2.inOut',
+    }, 1.1)
+    // Ещё не встав на место, начинает плавно разгоняться влево
+    .to(s10Img, { x: () => -s10Img.offsetWidth, duration: 4, ease: 'sine.in' }, 1.5)
     .to({}, { duration: 0.5 });
 
+duo('.s11', 560);
+quote('.s12');
+duo('.s13', 350);
+
+// Последняя надпись не гаснет: снизу выезжает конец страницы и чуть
+// приподнимает её — надпись встаёт по центру оставшегося над ним места
+const end = document.querySelector('.end');
+
+scene('.s14', 200)
+    .fromTo('.s14 .quote', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.5 }, 0)
+    .to({}, { duration: 0.3 })
+    .fromTo(end, { yPercent: 100 }, { yPercent: 0, duration: 0.8, ease: 'power2.out' })
+    .to('.s14 .quote', { y: () => -end.offsetHeight / 2, duration: 0.8, ease: 'power2.out' }, '<')
+    .to({}, { duration: 0.2 });
+
+// Ссылки навигации: сразу переносят к разделу, в момент, когда виден его
+// заголовок (метка 'title'), и без «догоняния» — иначе по пути на экране
+// прокручивалась бы назад вся анимация раздела
+document.querySelectorAll('.end a').forEach((link) => link.addEventListener('click', (event) => {
+    event.preventDefault();
+    const target = document.querySelector(link.hash);
+    const st = ScrollTrigger.getAll().find((t) => t.trigger === target);
+    lenis.scrollTo(st.labelToScroll('title'), { immediate: true, force: true });
+    ScrollTrigger.update();
+    ScrollTrigger.getAll().forEach((t) => t.getTween()?.progress(1));
+}));
+
 // Пересчитать позиции, когда загрузятся картинки
-window.addEventListener('load', () => ScrollTrigger.refresh());
+window.addEventListener('load', () => {
+    ScrollTrigger.refresh();
+    // Огромную картинку лож разжимаем заранее, а не в момент её появления —
+    // иначе на переходе к ней прокрутка запинается
+    s10Img.decode().catch(() => {});
+});

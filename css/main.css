@@ -4,10 +4,22 @@
     box-sizing: border-box;
 }
 
+/* clip, а не hidden: при hidden страницу всё равно можно сдвинуть вбок
+   тачпадом, если что-то шире экрана, — и всё «съезжает» влево */
+html,
+body {
+    overflow-x: clip;
+}
+
 body {
     background-color: #000;
     color: #fff;
-    overflow-x: hidden;
+}
+
+/* Картинки не шире своего блока: иначе огромные картинки ещё не свёрстанных
+   экранов (balkon3 — 12660px) растягивают страницу в ширину */
+img {
+    max-width: 100%;
 }
 
 /* Первый экран; GSAP закрепляет его на время анимации */
@@ -80,7 +92,8 @@ body {
    --feather — ширина размытой полосы */
 .s2__img,
 .s3__img,
-.s6__img {
+.s6__img,
+.photo {
     -webkit-mask-image:
         linear-gradient(to right, transparent, #000 var(--feather), #000 calc(100% - var(--feather)), transparent),
         linear-gradient(to bottom, transparent, #000 var(--feather), #000 calc(100% - var(--feather)), transparent);
@@ -314,20 +327,27 @@ body {
     will-change: transform, opacity;
 }
 
-/* Итоговая надпись. Наезжает на конец .s6 — после того как картинка
-   погасла, надпись появляется сразу, без пустого чёрного экрана */
-.s7 {
+/* Экраны с .s7 и дальше: каждый во весь экран и наезжает на конец предыдущего —
+   тот к этому моменту уже ушёл в темноту, и пустого чёрного экрана между ними нет.
+   z-index у всех одинаковый: следующий по порядку лежит сверху */
+.screen {
     position: relative;
     z-index: 1;
     height: 100vh;
-    margin-top: -100vh;     /* = высота .s6 */
+    margin-top: -100vh;
+    overflow: hidden;
+}
+
+/* Содержимое по центру экрана */
+.center {
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0 4vw;
 }
 
-.s7__title {
+/* Надпись по центру экрана */
+.quote {
     font-family: "PlayfairDisplaySC";
     font-weight: 400;
     font-size: 3vw;
@@ -336,25 +356,194 @@ body {
     will-change: opacity;
 }
 
+/* Большой заголовок, текст и картинка с мягкими краями.
+   Где они стоят — задаётся у каждого экрана */
+.title {
+    position: absolute;
+    font-weight: 400;
+    font-size: 8.9vw;
+    line-height: 1;
+    will-change: transform, opacity;
+}
+
+/* Несколько текстов (и картинок) одного экрана стоят на одном месте
+   и сменяют друг друга */
+.text {
+    position: absolute;
+    font-size: 1.25vw;
+    line-height: 1.45;
+    will-change: transform, opacity;
+}
+
+.photo {
+    position: absolute;
+    display: block;
+    height: auto;
+    --feather: 2.5vw;
+    will-change: transform, opacity;
+}
+
+/* «XVII век нашей эры»: картинка во весь экран, затемнение и заголовок
+   по центру — как у амфитеатра .s2 */
+.s8__img,
+.s8__dark {
+    position: absolute;
+    inset: 0;
+}
+
+.s8__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.s8__dark {
+    background-color: #000;
+    will-change: opacity;
+}
+
+.s8__title {
+    position: relative;
+    text-align: center;
+    font-weight: 400;
+    font-size: 9vw;
+    line-height: 1;
+    will-change: transform, opacity;
+}
+
+/* «Классический театр»: текст слева, картинка справа.
+   Текст 37vw + зазор 4vw + картинка 33vw = 74vw — по 13vw с боков */
+.s9__title { top: 2vw;    left: 13vw; }
+.s9__text  { top: 22.2vw; left: 13vw; width: 37vw; }
+.s9__img   { top: 22.2vw; left: 54vw; width: 33vw; }
+
+/* «От сцены к царской ложе»: заголовок по центру сверху, под ним
+   длинная картинка лож от левого края */
+.s10__title {
+    top: 3vw;
+    left: 0;
+    right: 0;
+    text-align: center;
+}
+
+/* Картинка намного шире экрана — её ширина идёт от высоты.
+   Сверху и снизу края слегка размыты, слева и справа — чёткие */
+.s10__img {
+    position: absolute;
+    top: 24.5vw;
+    left: 0;
+    display: block;
+    height: 38vw;
+    width: auto;
+    max-width: none;
+    will-change: transform;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 2vw, #000 calc(100% - 2vw), transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 2vw, #000 calc(100% - 2vw), transparent);
+}
+
+/* «Балконы»: картинка слева, текст справа, зазор 1.6vw — как в «Начале театра».
+   От левого края широкой картинки до правого края заголовка — 80.8vw,
+   по 9.6vw с боков. Широкая картинка растёт влево, правый край тот же */
+.s11__title     { top: 6.4vw;  left: 44.7vw; }
+.s11__text      { top: 17.7vw; left: 44.7vw; width: 34.5vw; }
+.s11__img       { top: 17.7vw; left: 17.6vw; width: 25.5vw; }
+.s11__img--wide {              left: 9.6vw;  width: 33.5vw; }
+
+/* «Настоящие ценители»: текст слева, картинка справа.
+   Текст 35.7vw + зазор 5.5vw + картинка 28vw ≈ 69.2vw — по 15.4vw с боков */
+.s13__title { top: 1.2vw; left: 15.4vw; }
+.s13__text  { top: 22vw;  left: 15.4vw; width: 35.7vw; }
+.s13__img   { top: 22vw;  left: 56.6vw; width: 28vw; }
+
+/* Конец страницы: прижат к низу последнего экрана и выезжает снизу.
+   Две колонки по сетке макета (1204px) — слева с 10.8vw, справа с 67.3vw */
+.end {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: 56.5vw auto;
+    padding: 6vw 10.8vw 5vw;
+    font-family: "Lato";
+    font-size: 1.25vw;
+    line-height: 2.4vw;
+}
+
+.end__title {
+    font-family: "PlayfairDisplaySC";
+    font-weight: 400;
+    font-size: 3vw;
+    line-height: 1;
+}
+
+.end p + .end__title {
+    margin-top: 2.6vw;
+}
+
+.end a {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    transition: opacity 0.3s;
+}
+
+.end a:hover {
+    opacity: 0.6;
+}
+
 @media (max-width: 900px) {
-    .s4 {
+    .s4,
+    .s5,
+    .screen {
         margin-top: 0;
     }
 
-    .s5 {
-        margin-top: 0;
-    }
-
-    .s7 {
-        margin-top: 0;
-    }
-
-    .s7__title {
+    .quote {
         font-size: 6vw;
     }
 
-    .s2__title {
+    .end {
+        grid-template-columns: 1fr;
+        gap: 8vw;
+        padding: 12vw 4vw;
+        font-size: 4vw;
+        line-height: 1.8;
+    }
+
+    .end__title {
+        font-size: 7vw;
+    }
+
+    .s2__title,
+    .s8__title,
+    .s10__title {
         font-size: 11vw;
+    }
+
+    /* Картинка с текстом — в одну колонку друг под другом */
+    .duo {
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 6vw;
+        padding: 12vw 4vw;
+    }
+
+    .duo .title,
+    .duo .text,
+    .duo .photo {
+        position: static;
+        width: 100%;
+    }
+
+    .duo .title {
+        font-size: 13vw;
+    }
+
+    .duo .text {
+        font-size: 4vw;
+        line-height: 1.3;
     }
 
     .s2 {
