@@ -3,9 +3,6 @@
     padding: 0;
     box-sizing: border-box;
 }
-
-/* clip, а не hidden: при hidden страницу всё равно можно сдвинуть вбок
-   тачпадом, если что-то шире экрана, — и всё «съезжает» влево */
 html,
 body {
     overflow-x: clip;
@@ -16,13 +13,10 @@ body {
     color: #fff;
 }
 
-/* Картинки не шире своего блока: иначе огромные картинки ещё не свёрстанных
-   экранов (balkon3 — 12660px) растягивают страницу в ширину */
 img {
     max-width: 100%;
 }
 
-/* Первый экран; GSAP закрепляет его на время анимации */
 .s1 {
     position: relative;
     z-index: 2;
@@ -58,21 +52,18 @@ img {
     backface-visibility: hidden;
 }
 
-/* Центр рта средней маски — точка, в которую «входим» */
 .mask--center {
     position: relative;
     z-index: 1;
     transform-origin: 52% 78%;
 }
 
-/* Амфитеатр, который проявляется из черноты после маски.
-   Высота — как у «Начала театра», которое лежит внутри */
 .s2 {
     position: relative;
     z-index: 1;
     height: 69.2vw;
     min-height: 100vh;
-    margin-top: -100vh;     /* заезжает под первый экран, пока там темно */
+    margin-top: -100vh;     
     overflow: hidden;
 }
 
@@ -83,13 +74,10 @@ img {
     width: 100%;
     object-fit: cover;
     will-change: transform;
-    /* Пока картинка во весь экран, края чёткие; размываются,
-       когда она уменьшается и встаёт рядом с текстом (см. main.js) */
+
     --feather: 0px;
 }
 
-/* Мягкие края у картинок амфитеатра и «Начала театра»: картинка растворяется в черноте по всем четырём сторонам.
-   --feather — ширина размытой полосы */
 .s2__img,
 .s3__img,
 .s6__img,
@@ -124,9 +112,6 @@ img {
     will-change: transform, opacity;
 }
 
-/* «Начало театра»: элементы стоят по линиям сетки макета.
-   Левый край правой колонки — 50.8vw, правый край левой колонки — 32.5vw.
-   Лежит поверх амфитеатра внутри .s2 */
 .s3 {
     position: absolute;
     inset: 0;
@@ -151,18 +136,16 @@ img {
 }
 
 .s3__img--1 {
-    top: 22vw;              /* верх — по верху текста */
+    top: 22vw;              
     left: 10vw;
-    width: 39.2vw;          /* правый край — чуть левее колонки текста */
-    /* Место-заглушка: сюда встаёт большая картинка .s2__img */
+    width: 39.2vw;         
     visibility: hidden;
 }
 
-/* Проявляется на месте первой, когда та гаснет */
 .s3__img--2 {
-    top: 22vw;              /* верх — по верху текста */
+    top: 22vw;              
     left: 10vw;
-    width: 39.2vw;          /* правый край — чуть левее колонки текста */
+    width: 39.2vw;          
 }
 
 .s3__text {
@@ -177,25 +160,20 @@ img {
     width: 30.4vw;
 }
 
-/* Встаёт на место первого текста, когда тот уходит */
 .s3__text--2 {
     top: 22vw;
     left: 50.8vw;
     width: 30.4vw;
 }
 
-/* «Несправедливость». Наезжает на конец .s2, чтобы спираль начиналась
-   сразу, без пустого чёрного экрана между ними */
 .s4 {
     position: relative;
     z-index: 2;
     height: 100vh;
-    margin-top: -69.2vw;    /* = высота .s2 */
+    margin-top: -69.2vw;    
     overflow: hidden;
 }
 
-/* Спираль сильно увеличена: на экране виден только верхний виток.
-   Размер и положение подобраны под макет; центр спирали — ниже экрана */
 .s4__spiral {
     position: absolute;
     left: -31.5vw;
@@ -221,13 +199,11 @@ img {
     will-change: transform, opacity;
 }
 
-/* «Иерархия рядов». Наезжает на конец .s4 — после спирали сразу текст.
-   Размеры сняты с макета шириной 1662px */
 .s5 {
     position: relative;
     z-index: 3;
     height: max(100vh, 60.9vw);
-    margin-top: -100vh;     /* = высота .s4 */
+    margin-top: -100vh;     
     overflow: hidden;
 }
 
@@ -255,7 +231,6 @@ img {
     left: 1.2vw;
 }
 
-/* Тексты рядов лежат поверх картинок-рядов */
 .s5__text {
     left: 67.6vw;
     z-index: 1;
@@ -266,9 +241,7 @@ img {
 .s5__text--2 { top: 28.3vw; }
 .s5__text--3 { top: 42.5vw; }
 
-/* Ряды амфитеатра: все прижаты к правому краю, каждый следующий длиннее.
-   Картинка — одна длинная полоса: у всех рядов одна высота, а лишняя
-   длина обрезается справа (левый, мягкий край остаётся виден) */
+
 .s5__row {
     position: absolute;
     right: 0;
@@ -277,7 +250,6 @@ img {
     object-fit: cover;
     object-position: left center;
     will-change: transform;
-    /* Сверху и снизу края чуть размыты, слева и справа — чёткие */
     -webkit-mask-image: linear-gradient(to bottom, transparent, #000 1.5vw, #000 calc(100% - 1.5vw), transparent);
     mask-image: linear-gradient(to bottom, transparent, #000 1.5vw, #000 calc(100% - 1.5vw), transparent);
 }
@@ -286,23 +258,21 @@ img {
 .s5__row--2 { top: 22.9vw; width: 49.2vw; }
 .s5__row--3 { top: 38.2vw; width: 66vw; }
 
-/* «Рост театра»: та же сетка, что у «Начала театра» —
-   картинка слева, заголовок и текст в правой колонке с 50.8vw.
-   Размеры сняты с макета шириной 1622px */
+
 .s6 {
     position: relative;
-    height: 100vh;          /* весь блок помещается в экран */
+    height: 100vh;          
     overflow: hidden;
 }
 
 .s6__img {
     position: absolute;
-    top: 20.4vw;            /* верх — по верху текста */
-    left: 18.8vw;           /* правый край — чуть левее колонки текста */
+    top: 20.4vw;            
+    left: 18.8vw;           
     display: block;
     width: 30vw;
     height: auto;
-    --feather: 2.5vw;       /* мягкие края, как у картинок «Начала театра» */
+    --feather: 2.5vw;       
     transform-origin: 50% 50%;
     will-change: transform, opacity;
 }
@@ -327,9 +297,6 @@ img {
     will-change: transform, opacity;
 }
 
-/* Экраны с .s7 и дальше: каждый во весь экран и наезжает на конец предыдущего —
-   тот к этому моменту уже ушёл в темноту, и пустого чёрного экрана между ними нет.
-   z-index у всех одинаковый: следующий по порядку лежит сверху */
 .screen {
     position: relative;
     z-index: 1;
@@ -338,7 +305,6 @@ img {
     overflow: hidden;
 }
 
-/* Содержимое по центру экрана */
 .center {
     display: flex;
     align-items: center;
@@ -346,7 +312,6 @@ img {
     padding: 0 4vw;
 }
 
-/* Надпись по центру экрана */
 .quote {
     font-family: "PlayfairDisplaySC";
     font-weight: 400;
@@ -356,8 +321,6 @@ img {
     will-change: opacity;
 }
 
-/* Большой заголовок, текст и картинка с мягкими краями.
-   Где они стоят — задаётся у каждого экрана */
 .title {
     position: absolute;
     font-weight: 400;
@@ -366,8 +329,6 @@ img {
     will-change: transform, opacity;
 }
 
-/* Несколько текстов (и картинок) одного экрана стоят на одном месте
-   и сменяют друг друга */
 .text {
     position: absolute;
     font-size: 1.25vw;
@@ -383,8 +344,6 @@ img {
     will-change: transform, opacity;
 }
 
-/* «XVII век нашей эры»: картинка во весь экран, затемнение и заголовок
-   по центру — как у амфитеатра .s2 */
 .s8__img,
 .s8__dark {
     position: absolute;
@@ -411,14 +370,11 @@ img {
     will-change: transform, opacity;
 }
 
-/* «Классический театр»: текст слева, картинка справа.
-   Текст 37vw + зазор 4vw + картинка 33vw = 74vw — по 13vw с боков */
 .s9__title { top: 2vw;    left: 13vw; }
 .s9__text  { top: 22.2vw; left: 13vw; width: 37vw; }
 .s9__img   { top: 22.2vw; left: 54vw; width: 33vw; }
 
-/* «От сцены к царской ложе»: заголовок по центру сверху, под ним
-   длинная картинка лож от левого края */
+
 .s10__title {
     top: 3vw;
     left: 0;
@@ -426,8 +382,6 @@ img {
     text-align: center;
 }
 
-/* Картинка намного шире экрана — её ширина идёт от высоты.
-   Сверху и снизу края слегка размыты, слева и справа — чёткие */
 .s10__img {
     position: absolute;
     top: 24.5vw;
@@ -441,22 +395,15 @@ img {
     mask-image: linear-gradient(to bottom, transparent, #000 2vw, #000 calc(100% - 2vw), transparent);
 }
 
-/* «Балконы»: картинка слева, текст справа, зазор 1.6vw — как в «Начале театра».
-   От левого края широкой картинки до правого края заголовка — 80.8vw,
-   по 9.6vw с боков. Широкая картинка растёт влево, правый край тот же */
 .s11__title     { top: 6.4vw;  left: 44.7vw; }
 .s11__text      { top: 17.7vw; left: 44.7vw; width: 34.5vw; }
 .s11__img       { top: 17.7vw; left: 17.6vw; width: 25.5vw; }
 .s11__img--wide {              left: 9.6vw;  width: 33.5vw; }
 
-/* «Настоящие ценители»: текст слева, картинка справа.
-   Текст 35.7vw + зазор 5.5vw + картинка 28vw ≈ 69.2vw — по 15.4vw с боков */
 .s13__title { top: 1.2vw; left: 15.4vw; }
 .s13__text  { top: 22vw;  left: 15.4vw; width: 35.7vw; }
 .s13__img   { top: 22vw;  left: 56.6vw; width: 28vw; }
 
-/* Конец страницы: прижат к низу последнего экрана и выезжает снизу.
-   Две колонки по сетке макета (1204px) — слева с 10.8vw, справа с 67.3vw */
 .end {
     position: absolute;
     left: 0;
@@ -521,7 +468,6 @@ img {
         font-size: 11vw;
     }
 
-    /* Картинка с текстом — в одну колонку друг под другом */
     .duo {
         height: auto;
         display: flex;
