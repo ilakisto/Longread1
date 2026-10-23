@@ -9,6 +9,7 @@ body {
 }
 
 body {
+    --leading: 1.6;
     background-color: #000;
     color: #fff;
 }
@@ -31,7 +32,7 @@ img {
 
 .s1 h1 {
     font-weight: 400;
-    font-size: 9.2vw;
+    font-size: 7vw;
     line-height: 1;
     margin-bottom: 6vw;
     will-change: transform, opacity;
@@ -151,7 +152,7 @@ img {
 .s3__text {
     position: absolute;
     font-size: 1.25vw;
-    line-height: 1.17;
+    line-height: var(--leading);
 }
 
 .s3__text--1 {
@@ -186,7 +187,7 @@ img {
 
 .s4__title {
     position: absolute;
-    top: 1.5vw;
+    top: 3.5vw;
     left: 0;
     right: 0;
     z-index: 1;
@@ -194,7 +195,7 @@ img {
     white-space: nowrap;
     color: #fff;
     font-weight: 400;
-    font-size: 2.93vw;
+    font-size: 4vw;
     line-height: 1;
     will-change: transform, opacity;
 }
@@ -222,7 +223,7 @@ img {
     position: absolute;
     width: 30vw;
     font-size: 1.3vw;
-    line-height: 1.27;
+    line-height: var(--leading);
     will-change: transform, opacity;
 }
 
@@ -257,6 +258,21 @@ img {
 .s5__row--1 { top: 7.9vw;  width: 33.8vw; }
 .s5__row--2 { top: 22.9vw; width: 49.2vw; }
 .s5__row--3 { top: 38.2vw; width: 66vw; }
+
+.s5__label {
+    position: absolute;
+    font-family: "PlayfairDisplaySC";
+    font-weight: 400;
+    font-size: 3vw;
+    line-height: 14.1vw;
+    color: #000;
+    white-space: nowrap;
+    will-change: transform;
+}
+
+.s5__label--1 { top: 7.9vw;  left: 69.3vw; }
+.s5__label--2 { top: 22.9vw; left: 53.2vw; }
+.s5__label--3 { top: 38.2vw; left: 36.6vw; }
 
 
 .s6 {
@@ -293,7 +309,7 @@ img {
     left: 50.8vw;
     width: 36vw;
     font-size: 1.25vw;
-    line-height: 1.4;
+    line-height: var(--leading);
     will-change: transform, opacity;
 }
 
@@ -332,7 +348,7 @@ img {
 .text {
     position: absolute;
     font-size: 1.25vw;
-    line-height: 1.45;
+    line-height: var(--leading);
     will-change: transform, opacity;
 }
 
@@ -395,14 +411,28 @@ img {
     mask-image: linear-gradient(to bottom, transparent, #000 2vw, #000 calc(100% - 2vw), transparent);
 }
 
+.s11 { margin-top: calc(-100vh - var(--pull, 0vh)); }
 .s11__title     { top: 6.4vw;  left: 44.7vw; }
 .s11__text      { top: 17.7vw; left: 44.7vw; width: 34.5vw; }
 .s11__img       { top: 17.7vw; left: 17.6vw; width: 25.5vw; }
 .s11__img--wide {              left: 9.6vw;  width: 33.5vw; }
 
-.s13__title { top: 1.2vw; left: 15.4vw; }
-.s13__text  { top: 22vw;  left: 15.4vw; width: 35.7vw; }
-.s13__img   { top: 22vw;  left: 56.6vw; width: 28vw; }
+.s13__title { top: 4.5vw; left: 0; right: 0; text-align: center; }
+.s13__text  { top: 25.6vw; left: 25.6vw; width: 35.7vw; }
+.s13__text--2 { top: 36.9vw; width: 32vw; }
+
+.s13__hand {
+    position: absolute;
+    top: 8vw;
+    height: 38vw;
+    max-width: none;
+    will-change: transform, opacity, filter;
+}
+
+.s13__hand--left  { left: 0vw; }
+.s13__hand--right { right: 0vw; }
+
+.s15 .quote { margin-bottom: 6vw; }
 
 .end {
     position: absolute;
@@ -440,6 +470,10 @@ img {
 }
 
 @media (max-width: 900px) {
+    body {
+        --leading: 1.45;
+    }
+
     .s4,
     .s5,
     .screen {
@@ -489,7 +523,7 @@ img {
 
     .duo .text {
         font-size: 4vw;
-        line-height: 1.3;
+        line-height: var(--leading);
     }
 
     .s2 {
@@ -538,12 +572,12 @@ img {
 
     .s6__text {
         font-size: 4vw;
-        line-height: 1.3;
+        line-height: var(--leading);
     }
 
     .s3__text {
         font-size: 4vw;
-        line-height: 1.3;
+        line-height: var(--leading);
     }
 
     .s1 h1 {

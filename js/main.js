@@ -157,6 +157,7 @@ scene(s4, 620)
 const s5 = document.querySelector('.s5');
 const s5Rows = s5.querySelectorAll('.s5__row');
 const s5Texts = s5.querySelectorAll('.s5__text');
+const s5Labels = s5.querySelectorAll('.s5__label');
 
 
 const WASH_DRIFT = 8;
@@ -202,7 +203,8 @@ s5Rows.forEach((row, i) => {
                 ease: 'power2.out',
                 onUpdate: () => washText(row, s5Texts[i]),
             },
-            textAt + ROW_READ);
+            textAt + ROW_READ)
+        .fromTo(s5Labels[i], { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.8, ease: 'power1.inOut' }, textAt + ROW_READ + 0.8);
 });
 s5Tl.to({}, { duration: 0.3 });
 
@@ -216,7 +218,7 @@ const s5Exit = [
 s5Rows.forEach((row, i) => {
     const { at, duration, ease, washes } = s5Exit[i];
     const text = washes && s5.querySelector(washes);
-    s5Tl.to(row, {
+    s5Tl.to([row, s5Labels[i]], {
         x: () => -(row.offsetLeft + row.offsetWidth),
         duration,
         ease,
@@ -259,26 +261,36 @@ const quote = (selector) => {
 
 
 const SWAP = 2.2;          
-const duo = (selector, length) => {
+const PULL = 1;
+const PULL_GAP = 3;
+const duo = (selector, length, puller) => {
     const box = document.querySelector(selector);
     const title = box.querySelector('.title');
     const photos = box.querySelectorAll('.photo');
     const texts = box.querySelectorAll('.text');
     const last = photos.length - 1;
+    const o = puller ? PULL : 0;
 
-    const tl = scene(box, length)
-        .fromTo(photos[0], appear, appeared, 0)
-        .fromTo([title, texts[0]], rise(), { ...risen, duration: 0.4, stagger: 0.08 }, 0.3);
+    const tl = scene(box, length).fromTo(photos[0], appear, appeared, o);
+    if (puller) {
+        const behind = (x, el) =>
+            `${Math.max(parseFloat(x), puller.getBoundingClientRect().right + vw(PULL_GAP) - el.offsetLeft)}px`;
+        tl.fromTo([title, texts[0]],
+            { x: (i, el) => window.innerWidth - el.offsetLeft },
+            { x: 0, duration: 0.8, ease: 'power2.out', stagger: 0.06, modifiers: { x: behind } }, 0);
+    } else {
+        tl.fromTo([title, texts[0]], rise(), { ...risen, duration: 0.4, stagger: 0.08 }, 0.3);
+    }
 
     for (let i = 1; i <= last; i++) {
-        const at = 2 + (i - 1) * SWAP;
+        const at = o + 2 + (i - 1) * SWAP;
         tl.to([photos[i - 1], texts[i - 1]], { autoAlpha: 0, duration: 0.4 }, at)
             .fromTo(photos[i], appear, appeared, at + 0.3)
             .fromTo(texts[i], rise(), { ...risen, duration: 0.3 }, at + 0.6);
     }
 
     tl.to([title, texts[last], photos[last]],
-        { autoAlpha: 0, duration: 0.6, ease: 'power1.inOut' }, (last + 1) * SWAP - 0.2)
+        { autoAlpha: 0, duration: 0.6, ease: 'power1.inOut' }, o + (last + 1) * SWAP - 0.2)
         .to({}, { duration: TAIL });
 };
 
@@ -301,8 +313,10 @@ duo('.s9', 560);
 
 
 const s10Img = document.querySelector('.s10__img');
+const S10_LENGTH = 650;
+const S10_PULL_AT = 4.9;
 
-scene('.s10', 650)
+const s10Tl = scene('.s10', S10_LENGTH)
     .fromTo('.s10__title', rise(), { ...risen, duration: 0.5, ease: 'power1.out' }, 0.2)
     .fromTo(s10Img, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.6, ease: 'power1.out' }, 0.3)
     .addLabel('title', 0.95)
@@ -315,18 +329,37 @@ scene('.s10', 650)
     .to(s10Img, { x: () => -s10Img.offsetWidth, duration: 4, ease: 'sine.in' }, 1.5)
     .to({}, { duration: 0.5 });
 
-duo('.s11', 560);
+
+document.querySelector('.s11').style.setProperty('--pull',
+    `${S10_LENGTH * (1 - S10_PULL_AT / s10Tl.duration())}vh`);
+duo('.s11', 660, s10Img);
 quote('.s12');
-duo('.s13', 350);
+
+
+const S13_SWAY = 0.8;
+const dark = { autoAlpha: 0, filter: 'brightness(0)' };
+const lit = { autoAlpha: 1, filter: 'brightness(1)', duration: 1, ease: 'power2.out' };
+
+scene('.s13', 500)
+    .fromTo('.s13__hand', dark, { ...lit, duration: 1.4 }, 0)
+    .fromTo('.s13__title', dark, lit, 0.4)
+    .fromTo('.s13__text', dark, { ...lit, duration: 1.4, stagger: 1.6 })
+    .to({}, { duration: 1 })
+    .to('.s13 > *', { ...dark, duration: 0.8, ease: 'power1.inOut' })
+    .to({}, { duration: 0.2 });
+
+gsap.fromTo('.s13__hand',
+    { y: (i) => vw((i ? 1 : -1) * S13_SWAY) },
+    { y: (i) => vw((i ? -1 : 1) * S13_SWAY), duration: 2.4, ease: 'sine.inOut', yoyo: true, repeat: -1 });
 
 
 const end = document.querySelector('.end');
 
-scene('.s14', 200)
-    .fromTo('.s14 .quote', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.5 }, 0)
+scene('.s15', 200)
+    .fromTo('.s15 .quote', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.5 }, 0)
     .to({}, { duration: 0.3 })
     .fromTo(end, { yPercent: 100 }, { yPercent: 0, duration: 0.8, ease: 'power2.out' })
-    .to('.s14 .quote', { y: () => -end.offsetHeight / 2, duration: 0.8, ease: 'power2.out' }, '<')
+    .to('.s15 .quote', { y: () => -end.offsetHeight / 2, duration: 0.8, ease: 'power2.out' }, '<')
     .to({}, { duration: 0.2 });
 
 
